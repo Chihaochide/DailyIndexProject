@@ -9,5 +9,5 @@ public interface UserService {
 
     SysUser findByUserName(String userName);
 
-    R<LoginRespVo> login(LoginReqVo loginReqVo);
+    R login(LoginReqVo loginReqVo);
 }

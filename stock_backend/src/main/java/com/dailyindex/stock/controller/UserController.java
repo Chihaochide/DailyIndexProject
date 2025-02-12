@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public R<LoginRespVo> login(@RequestBody LoginReqVo loginReqVo){
+    public R login(@RequestBody LoginReqVo loginReqVo){
 
         return userService.login(loginReqVo);
 
