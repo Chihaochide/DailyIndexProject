@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
 //            throw new DailyIndexException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
             throw new DailyIndexException(ResponseCode.DATA_ERROR);
         }
-        System.out.println("=====================");
+        System.out.println("======11===============");
         SysUser dbUser = mainSysUserMapper.findUserInfoByUserName(loginReqVo.getUsername());
         if (dbUser==null){
             throw new DailyIndexException(ResponseCode.ACCOUNT_NOT_EXISTS);
