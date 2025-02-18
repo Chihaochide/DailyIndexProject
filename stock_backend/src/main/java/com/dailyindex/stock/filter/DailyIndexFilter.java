@@ -16,11 +16,14 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Enumeration;
 
 /**
@@ -29,8 +32,8 @@ import java.util.Enumeration;
  * 参数二：过滤器拦截啊的路径（/*代表全部拦截）
  * 有问题 前端发送过来的token只有一次，第二次为null
  */
-//@Component
-//@WebFilter(filterName = "DailyIndexFilter",urlPatterns = "/*")
+@Component
+@WebFilter(filterName = "DailyIndexFilter",urlPatterns = "/*")
 public class DailyIndexFilter implements Filter {
 
     @Value("${DailyIndex.jwt.publicKeyPath}")
@@ -42,27 +45,23 @@ public class DailyIndexFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String requestURI = request.getRequestURI();
-        if (requestURI.contains("login")){
+        if (requestURI.contains("login")||requestURI.contains("captcha")){
             System.out.println("登录请求，放行");
             filterChain.doFilter(request,response); // 执行Controller方法
         }else {
-            String token = request.getHeader("Authorization");
+            HttpSession session = request.getSession();
+            String token = (String) session.getAttribute("token2");
             if (StringUtils.isEmpty(token)){
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
             }
 
             try {
                 PublicKey publicKey = RsaUtils.getPublicKey(publicKeyPath);
-                System.out.println("token = " + token);
                 Payload<LoginRespVo> info = JwtUtils.getInfoFromToken(token, publicKey, LoginRespVo.class);
-                LoginRespVo loginUser = info.getInfo();
-                if (loginUser==null||StringUtils.isEmpty(loginUser.getUsername())){
-                    throw new DailyIndexException(ResponseCode.NO_RESPONSE_DATA);
-                }else {
-                    ThreadLocalUtils.set(loginUser.getUsername());
-                    filterChain.doFilter(request,response); // 执行Controller方法
+                LoginRespVo loginRespVo = info.getInfo();
+                System.out.println("loginRespVo = " + loginRespVo);
+                ThreadLocalUtils.set(loginRespVo.getUsername());
 
-                }
             }catch (Exception e){
                 System.err.println("不合法token！");
                 e.printStackTrace();

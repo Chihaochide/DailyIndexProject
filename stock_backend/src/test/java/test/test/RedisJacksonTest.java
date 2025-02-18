@@ -20,4 +20,11 @@ public class RedisJacksonTest {
         String myname = redisTemplate.opsForValue().get("myname");
         System.out.println("myname = " + myname);
     }
+
+    @Test
+    public void test2(){
+        System.out.println(redisTemplate.opsForValue().get("CK:" + "1891791779087519744"));
+
+    }
+
 }

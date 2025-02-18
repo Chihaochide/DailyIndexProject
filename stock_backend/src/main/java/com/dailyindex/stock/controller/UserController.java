@@ -11,6 +11,9 @@ import com.daily.stock.dtos.R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 @RestController
@@ -29,8 +32,9 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public R login(@RequestBody LoginReqVo loginReqVo){
-        return userService.login(loginReqVo);
+    public R login(@RequestBody LoginReqVo loginReqVo,HttpServletResponse response,HttpServletRequest request){
+
+        return userService.login(loginReqVo,response,request);
     }
 
     /**
@@ -41,5 +45,12 @@ public class UserController {
     public R<Map> getCaptchaCode(){
         return userService.getCaptchaCode();
     }
+
+    @GetMapping("/test")
+    public void cookieTest(HttpServletRequest request, HttpServletResponse response){
+        Cookie cookie = new Cookie("token","Axx");
+        response.addCookie(cookie);
+    }
+
 
 }

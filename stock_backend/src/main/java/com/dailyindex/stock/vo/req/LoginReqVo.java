@@ -24,5 +24,5 @@ public class LoginReqVo {
     /**
      * sessionId
      */
-    private String sessionID;
+    private String sessionId;
 }

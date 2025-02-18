@@ -18,13 +18,19 @@ import com.daily.stock.dtos.R;
 import com.daily.stock.dtos.ResponseCode;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.platform.commons.util.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.awt.*;
 import java.security.PrivateKey;
 import java.util.HashMap;
@@ -65,11 +71,26 @@ public class UserServiceImpl implements UserService {
      * 用户登录功能
      */
     @Override
-    public R login(LoginReqVo loginReqVo) {
-        if (loginReqVo== null|| StringUtils.isBlank(loginReqVo.getUsername())||StringUtils.isBlank(loginReqVo.getPassword())||StringUtils.isBlank(loginReqVo.getCode())){
+    public R login(LoginReqVo loginReqVo, HttpServletResponse response, HttpServletRequest request) {
+        if (loginReqVo== null|| StringUtils.isBlank(loginReqVo.getUsername())||StringUtils.isBlank(loginReqVo.getPassword())){
 //            throw new DailyIndexException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
             throw new DailyIndexException(ResponseCode.DATA_ERROR);
         }
+        if (StringUtils.isBlank(loginReqVo.getCode())||StringUtils.isBlank(loginReqVo.getSessionId())){
+            throw new DailyIndexException(ResponseCode.CHECK_CODE_NOT_EMPTY);
+        }
+        // 匹配验证码
+        ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
+
+        String redisCode = valueOperations.get("CK:"+loginReqVo.getSessionId());
+        if (StringUtils.isBlank(redisCode)){
+            throw new DailyIndexException(ResponseCode.CHECK_CODE_TIMEOUT);
+        }
+        if (!redisCode.equalsIgnoreCase(loginReqVo.getCode())) {
+            throw new DailyIndexException(ResponseCode.CHECK_CODE_ERROR);
+        }
+
+
         System.out.println("======11===============");
         SysUser dbUser = mainSysUserMapper.findUserInfoByUserName(loginReqVo.getUsername());
         if (dbUser==null){
@@ -83,7 +104,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 都匹配了
-        // 获取token
+        // 获取token (未完成)
         try {
             PrivateKey privateKey = RsaUtils.getPrivateKey(privateKeyPath);
             LoginRespVo respVo = new LoginRespVo();
@@ -99,6 +120,10 @@ public class UserServiceImpl implements UserService {
             Map map = new HashMap<>();
             map.put("accessToken",token);
             map.put("user",respVo);
+            // 获取session  第一次执行就是创建session了
+            HttpSession session = request.getSession();
+            session.setAttribute("token2",token);
+            session.setMaxInactiveInterval(60*5);
             return R.ok(map);
         }catch (Exception e){
             throw new DailyIndexException(500,"系统错误");
