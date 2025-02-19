@@ -8,6 +8,10 @@ import com.dailyindex.stock.service.UserService;
 import com.dailyindex.stock.vo.req.LoginReqVo;
 
 import com.daily.stock.dtos.R;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+import org.apiguardian.api.API;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
+@Api(tags = "用户登录使用")
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -23,7 +28,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
+    @ApiOperation(value = "根据用户名查询用户信息")
+    @ApiImplicitParam(name = "name",value = "用户名",dataType = "String",required = true,type = "path")
     @GetMapping("/user/{userName}")
     public SysUser getUserByUserName(@PathVariable("userName") String userName){
 
@@ -31,6 +37,7 @@ public class UserController {
     }
 
 
+    @ApiOperation("用户登录功能")
     @PostMapping("/login")
     public R login(@RequestBody LoginReqVo loginReqVo,HttpServletResponse response,HttpServletRequest request){
 

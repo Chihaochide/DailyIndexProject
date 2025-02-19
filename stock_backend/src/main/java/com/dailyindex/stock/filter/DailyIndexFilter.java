@@ -32,8 +32,8 @@ import java.util.Enumeration;
  * 参数二：过滤器拦截啊的路径（/*代表全部拦截）
  * 有问题 前端发送过来的token只有一次，第二次为null
  */
-@Component
-@WebFilter(filterName = "DailyIndexFilter",urlPatterns = "/*")
+//@Component
+//@WebFilter(filterName = "DailyIndexFilter",urlPatterns = "/*")
 public class DailyIndexFilter implements Filter {
 
     @Value("${DailyIndex.jwt.publicKeyPath}")
@@ -56,6 +56,7 @@ public class DailyIndexFilter implements Filter {
             }
 
             try {
+                System.out.println("token = " + token);
                 PublicKey publicKey = RsaUtils.getPublicKey(publicKeyPath);
                 Payload<LoginRespVo> info = JwtUtils.getInfoFromToken(token, publicKey, LoginRespVo.class);
                 LoginRespVo loginRespVo = info.getInfo();
